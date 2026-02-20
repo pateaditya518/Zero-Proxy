@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureTrack - Student Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        .login-container h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .login-container p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Dashboard Styles */
+        .app {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+            display: none;
+        }
+
+        .app.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            border: 3px solid white;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .student-info h2 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .student-info p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .roll-no {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .date-time-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .time-display {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Current Class Card */
+        .current-class-card {
+            margin: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            color: white;
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff4444;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .current-class-card h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .class-time {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .class-progress {
+            background: rgba(255,255,255,0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .class-status {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .mark-attendance-btn {
+            background: white;
+            color: #f5576c;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .mark-attendance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Next Class Preview */
+        .next-class-preview {
+            margin: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .next-class-preview h4 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .next-class-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .next-class-info p {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .time-until {
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        /* History Section */
+        .history-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .history-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            background: white;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-card {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            gap: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .history-card:hover {
+            transform: translateX(5px);
+        }
+
+        .history-date {
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .history-date .day {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            display: block;
+        }
+
+        .history-date .month {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .history-details {
+            flex: 1;
+        }
+
+        .history-details h4 {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .history-details p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .status-absent {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .status-late {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 15px;
+            text-align: center;
+            background: white;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .app {
+                border-radius: 20px;
+            }
+            
+            .student-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .date-time-bar {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+            
+            .history-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <h1>📘 SecureTrack</h1>
+        <p>Student Login Dashboard</p>
+        <input type="text" class="login-input" placeholder="Roll Number" id="rollNo" value="CS2024001">
+        <input type="password" class="login-input" placeholder="Password" id="password" value="123456">
+        <button class="login-btn" onclick="login()">Login to Dashboard</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="app" id="dashboard">
+        <!-- Header with Student Info -->
+        <div class="header">
+            <div class="student-info">
+                <div class="profile-pic">👤</div>
+                <div>
+                    <h2 id="studentName">Ujjwal Haware</h2>
+                    <p id="studentCourse">B.Tech CSE • Semester 4th</p>
+                    <p class="roll-no" id="studentRoll">Roll No: CS2024001</p>
+                </div>
+            </div>
+            <div class="date-time-bar">
+                <span id="currentDate"></span>
+                <span class="time-display" id="liveTime">00:00:00</span>
+            </div>
+        </div>
+
+        <!-- Current Class Card -->
+        <div class="current-class-card" id="currentClassCard">
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span id="classStatusText">LIVE CLASS</span>
+            </div>
+            <h3 id="currentSubject">Data Structures</h3>
+            <p class="class-time" id="currentTiming">09:00 - 10:00 • Room 301</p>
+            
+            <div class="class-progress">
+                <div class="progress-fill" id="classProgress" style="width: 0%;"></div>
+            </div>
+            
+            <div class="class-status">
+                <span id="classStartTime">Started: 09:00 AM</span>
+                <span id="classEndTime">Ends: 10:00 AM</span>
+            </div>
+            
+            <button class="mark-attendance-btn" onclick="markAttendance()">
+                📷 Mark Attendance
+            </button>
+        </div>
+
+        <!-- Next Class Preview -->
+        <div class="next-class-preview" id="nextClassPreview">
+            <h4>⏭️ Next Class</h4>
+            <div class="next-class-info">
+                <div>
+                    <p id="nextSubject">Database Management</p>
+                    <span id="nextTiming">10:15 - 11:15 • Room 302</span>
+                </div>
+                <span class="time-until" id="timeUntilNext">in 15 min</span>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="history-section">
+            <h3>📋 Attendance History</h3>
+            
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <span class="stat-value" id="totalClasses">24</span>
+                    <span class="stat-label">Total Classes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="presentCount">18</span>
+                    <span class="stat-label">Present</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="attendancePercentage">75%</span>
+                    <span class="stat-label">Attendance</span>
+                </div>
+            </div>
+
+            <!-- History Filters -->
+            <div class="history-filters">
+                <button class="filter-btn active" onclick="filterHistory('all')">All</button>
+                <button class="filter-btn" onclick="filterHistory('present')">Present</button>
+                <button class="filter-btn" onclick="filterHistory('absent')">Absent</button>
+                <button class="filter-btn" onclick="filterHistory('late')">Late</button>
+            </div>
+
+            <!-- History List -->
+            <div class="history-list" id="historyList"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🔒 SecureTrack • Zero-Proxy Attendance • Real-time Updates</p>
+        </div>
+    </div>
+
+    <!-- Attendance Success Toast -->
+    <div style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 15px 25px; border-radius: 50px; display: none; align-items: center; gap: 10px; z-index: 1000;" id="toast">
+        ✅ Attendance Marked Successfully!
+    </div>
+
+    <script>
+        // ==================== DATA ====================
+        let currentUser = null;
+        let attendanceHistory = [];
+        let classSchedule = [
+            { day: 'Monday', subject: 'Data Structures', time: '09:00 - 10:00', teacher: 'Prof. Sharma', room: '301' },
+            { day: 'Monday', subject: 'Database Management', time: '10:15 - 11:15', teacher: 'Prof. Patel', room: '302' },
+            { day: 'Monday', subject: 'Computer Networks', time: '11:30 - 12:30', teacher: 'Prof. Kumar', room: '303' },
+            { day: 'Monday', subject: 'Operating Systems', time: '13:30 - 14:30', teacher: 'Prof. Singh', room: '304' },
+            { day: 'Tuesday', subject: 'Algorithm Analysis', time: '09:00 - 10:00', teacher: 'Prof. Sharma', room: '301' },
+            { day: 'Tuesday', subject: 'Web Development', time: '10:15 - 11:15', teacher: 'Prof. Joshi', room: '305' },
+            { day: 'Tuesday', subject: 'Database Management', time: '11:30 - 12:30', teacher: 'Prof. Patel', room: '302' },
+            { day: 'Tuesday', subject: 'Computer Networks Lab', time: '13:30 - 14:30', teacher: 'Prof. Kumar', room: 'Lab-101' },
+            { day: 'Wednesday', subject: 'Operating Systems', time: '09:00 - 10:00', teacher: 'Prof. Singh', room: '304' },
+            { day: 'Wednesday', subject: 'Data Structures', time: '10:15 - 11:15', teacher: 'Prof. Sharma', room: '301' },
+            { day: 'Wednesday', subject: 'Algorithm Analysis', time: '11:30 - 12:30', teacher: 'Prof. Sharma', room: '301' },
+            { day: 'Wednesday', subject: 'Web Development Lab', time: '13:30 - 14:30', teacher: 'Prof. Joshi', room: 'Lab-102' },
+            { day: 'Thursday', subject: 'Database Management', time: '09:00 - 10:00', teacher: 'Prof. Patel', room: '302' },
+            { day: 'Thursday', subject: 'Computer Networks', time: '10:15 - 11:15', teacher: 'Prof. Kumar', room: '303' },
+            { day: 'Thursday', subject: 'Data Structures Lab', time: '11:30 - 12:30', teacher: 'Prof. Sharma', room: 'Lab-101' },
+            { day: 'Thursday', subject: 'Operating Systems', time: '13:30 - 14:30', teacher: 'Prof. Singh', room: '304' },
+            { day: 'Friday', subject: 'Algorithm Analysis', time: '09:00 - 10:00', teacher: 'Prof. Sharma', room: '301' },
+            { day: 'Friday', subject: 'Web Development', time: '10:15 - 11:15', teacher: 'Prof. Joshi', room: '305' },
+            { day: 'Friday', subject: 'Database Management Lab', time: '11:30 - 12:30', teacher: 'Prof. Patel', room: 'Lab-102' },
+            { day: 'Friday', subject: 'Mentoring Session', time: '13:30 - 14:30', teacher: 'Prof. Kumar', room: '303' }
+        ];
+
+        // ==================== LOGIN FUNCTION ====================
+        function login() {
+            const rollNo = document.getElementById('rollNo').value;
+            const password = document.getElementById('password').value;
+            
+            if(rollNo && password) {
+                currentUser = {
+                    name: 'Ujjwal Haware',
+                    rollNo: rollNo,
+                    course: 'B.Tech CSE',
+                    semester: '4th'
+                };
+                
+                // Load history from localStorage
+                loadHistory();
+                
+                // Show dashboard
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboard').classList.add('show');
+                
+                // Start real-time updates
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+                setInterval(updateCurrentClass, 1000);
+                
+                // Initial updates
+                updateCurrentClass();
+                renderHistory();
+                updateStats();
+            }
+        }
+
+        // ==================== DATE & TIME FUNCTIONS ====================
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+            
+            // Time
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: true });
+            document.getElementById('liveTime').textContent = timeStr;
+        }
+
+        // ==================== CLASS TRACKING FUNCTIONS ====================
+        function getCurrentClass() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+            
+            // Convert current time to minutes for comparison
+            const currentTimeInMinutes = currentHour * 60 + currentMin;
+            
+            // Find current class
+            for(let classItem of classSchedule) {
+                if(classItem.day === currentDay) {
+                    const [start, end] = classItem.time.split(' - ');
+                    const startMinutes = timeToMinutes(start);
+                    const endMinutes = timeToMinutes(end);
+                    
+                    if(currentTimeInMinutes >= startMinutes && currentTimeInMinutes <= endMinutes) {
+                        return {
+                            ...classItem,
+                            progress: ((currentTimeInMinutes - startMinutes) / (endMinutes - startMinutes)) * 100,
+                            timeRemaining: endMinutes - currentTimeInMinutes,
+                            isOngoing: true
+                        };
+                    }
+                }
+            }
+            
+            // Find next class
+            for(let classItem of classSchedule) {
+                if(classItem.day === currentDay) {
+                    const [start] = classItem.time.split(' - ');
+                    const startMinutes = timeToMinutes(start);
+                    
+                    if(startMinutes > currentTimeInMinutes) {
+                        return {
+                            ...classItem,
+                            isOngoing: false,
+                            minutesUntil: startMinutes - currentTimeInMinutes,
+                            isNext: true
+                        };
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        function timeToMinutes(timeStr) {
+            const [time, period] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            
+            if(period === 'PM' && hours !== 12) hours += 12;
+            if(period === 'AM' && hours === 12) hours = 0;
+            
+            return hours * 60 + minutes;
+        }
+
+        function updateCurrentClass() {
+            const currentClass = getCurrentClass();
+            const nextClassPreview = document.getElementById('nextClassPreview');
+            
+            if(currentClass) {
+                if(currentClass.isOngoing) {
+                    // Show current class
+                    document.getElementById('currentSubject').textContent = currentClass.subject;
+                    document.getElementById('currentTiming').textContent = `${currentClass.time} • Room ${currentClass.room}`;
+                    document.getElementById('classProgress').style.width = `${currentClass.progress}%`;
+                    
+                    const [start] = currentClass.time.split(' - ');
+                    document.getElementById('classStartTime').textContent = `Started: ${start}`;
+                    
+                    // Show next class preview
+                    const nextClass = getNextClass();
+                    if(nextClass) {
+                        nextClassPreview.style.display = 'block';
+                        document.getElementById('nextSubject').textContent = nextClass.subject;
+                        document.getElementById('nextTiming').textContent = `${nextClass.time} • Room ${nextClass.room}`;
+                        
+                        const minutes = nextClass.minutesUntil;
+                        document.getElementById('timeUntilNext').textContent = 
+                            minutes < 60 ? `in ${minutes} min` : `in ${Math.floor(minutes/60)}h ${minutes%60}m`;
+                    } else {
+                        nextClassPreview.style.display = 'none';
+                    }
+                } else if(currentClass.isNext) {
+                    // No ongoing class, show next class
+                    document.getElementById('currentSubject').textContent = 'No ongoing class';
+                    document.getElementById('currentTiming').textContent = 'Next class:';
+                    document.getElementById('classProgress').style.width = '0%';
+                    
+                    document.getElementById('nextSubject').textContent = currentClass.subject;
+                    document.getElementById('nextTiming').textContent = `${currentClass.time} • Room ${currentClass.room}`;
+                    
+                    const minutes = currentClass.minutesUntil;
+                    document.getElementById('timeUntilNext').textContent = 
+                        minutes < 60 ? `in ${minutes} min` : `in ${Math.floor(minutes/60)}h ${minutes%60}m`;
+                    
+                    document.getElementById('classStatusText').textContent = 'UPCOMING CLASS';
+                }
+            }
+        }
+
+        function getNextClass() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+            
+            const currentTimeInMinutes = currentHour * 60 + currentMin;
+            
+            for(let classItem of classSchedule) {
+                if(classItem.day === currentDay) {
+                    const [start] = classItem.time.split(' - ');
+                    const startMinutes = timeToMinutes(start);
+                    
+                    if(startMinutes > currentTimeInMinutes) {
+                        return {
+                            ...classItem,
+                            minutesUntil: startMinutes - currentTimeInMinutes
+                        };
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // ==================== ATTENDANCE FUNCTIONS ====================
+        function markAttendance() {
+            const now = new Date();
+            const currentClass = getCurrentClass();
+            
+            if(currentClass && currentClass.isOngoing) {
+                const attendanceRecord = {
+                    id: Date.now(),
+                    date: now.toLocaleDateString(),
+                    day: now.toLocaleDateString('en-US', { weekday: 'long' }),
+                    subject: currentClass.subject,
+                    time: now.toLocaleTimeString(),
+                    status: 'present',
+                    teacher: currentClass.teacher,
+                    room: currentClass.room
+                };
+                
+                // Add to history
+                attendanceHistory.unshift(attendanceRecord);
+                
+                // Save to localStorage
+                saveHistory();
+                
+                // Update UI
+                renderHistory();
+                updateStats();
+                
+                // Show toast
+                const toast = document.getElementById('toast');
+                toast.style.display = 'flex';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // ==================== HISTORY FUNCTIONS ====================
+        function loadHistory() {
+            const saved = localStorage.getItem('attendanceHistory');
+            if(saved) {
+                attendanceHistory = JSON.parse(saved);
+            } else {
+                // Sample history data
+                attendanceHistory = [
+                    { id: 1, date: '3/17/2026', day: 'Tuesday', subject: 'Data Structures', time: '09:05 AM', status: 'present', teacher: 'Prof. Sharma', room: '301' },
+                    { id: 2, date: '3/16/2026', day: 'Monday', subject: 'Database Management', time: '10:20 AM', status: 'late', teacher: 'Prof. Patel', room: '302' },
+                    { id: 3, date: '3/15/2026', day: 'Sunday', subject: 'No Class', time: '-', status: 'absent', teacher: '-', room: '-' },
+                    { id: 4, date: '3/14/2026', day: 'Saturday', subject: 'Project Work', time: '10:05 AM', status: 'present', teacher: 'All Faculty', room: 'Lab-101' },
+                    { id: 5, date: '3/13/2026', day: 'Friday', subject: 'Web Development', time: '09:15 AM', status: 'present', teacher: 'Prof. Joshi', room: '305' },
+                    { id: 6, date: '3/12/2026', day: 'Thursday', subject: 'Computer Networks', time: '10:30 AM', status: 'late', teacher: 'Prof. Kumar', room: '303' },
+                    { id: 7, date: '3/11/2026', day: 'Wednesday', subject: 'Operating Systems', time: '09:00 AM', status: 'present', teacher: 'Prof. Singh', room: '304' },
+                    { id: 8, date: '3/10/2026', day: 'Tuesday', subject: 'Algorithm Analysis', time: '09:10 AM', status: 'present', teacher: 'Prof. Sharma', room: '301' },
+                ];
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem('attendanceHistory', JSON.stringify(attendanceHistory));
+        }
+
+        function renderHistory(filter = 'all') {
+            const historyList = document.getElementById('historyList');
+            let filtered = attendanceHistory;
+            
+            if(filter !== 'all') {
+                filtered = attendanceHistory.filter(h => h.status === filter);
+            }
+            
+            let html = '';
+            filtered.forEach(record => {
+                const dateParts = record.date.split('/');
+                const day = dateParts[1];
+                const month = dateParts[0];
+                
+                let statusClass = '';
+                if(record.status === 'present') statusClass = 'status-present';
+                else if(record.status === 'absent') statusClass = 'status-absent';
+                else if(record.status === 'late') statusClass = 'status-late';
+                
+                html += `
+                    <div class="history-card">
+                        <div class="history-date">
+                            <span class="day">${day}</span>
+                            <span class="month">${month}</span>
+                        </div>
+                        <div class="history-details">
+                            <h4>${record.subject}</h4>
+                            <p>${record.teacher} • Room ${record.room}</p>
+                            <div class="history-time">${record.time}</div>
+                        </div>
+                        <div class="history-status ${statusClass}">
+                            ${record.status.toUpperCase()}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            historyList.innerHTML = html || '<p style="text-align: center; color: #999;">No history found</p>';
+        }
+
+        function filterHistory(filter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderHistory(filter);
+        }
+
+        function updateStats() {
+            const total = attendanceHistory.length;
+            const present = attendanceHistory.filter(h => h.status === 'present' || h.status === 'late').length;
+            const percentage = total > 0 ? Math.round((present/total)*100) : 0;
+            
+            document.getElementById('totalClasses').textContent = total;
+            document.getElementById('presentCount').textContent = present;
+            document.getElementById('attendancePercentage').textContent = percentage + '%';
+        }
+
+        // ==================== INITIALIZATION ====================
+        // Check if already logged in
+        window.onload = function() {
+            const savedUser = localStorage.getItem('currentUser');
+            if(savedUser) {
+                currentUser = JSON.parse(savedUser);
+                loadHistory();
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboard').classList.add('show');
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+                setInterval(updateCurrentClass, 1000);
+                updateCurrentClass();
+                renderHistory();
+                updateStats();
+            }
+        }
+    </script>
+</body>
+</html>

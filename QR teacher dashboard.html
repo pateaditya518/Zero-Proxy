@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Console - Zero Proxy</title>
+  <style>
+    :root {
+      --bg-color: #020617;
+      --text-color: #ffffff;
+      --card-bg: rgba(30, 41, 59, 0.4);
+      --card-inner: rgba(15, 23, 42, 0.8);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --input-bg: #0f172a;
+      --input-border: #334155;
+      --secondary-text: #94a3b8;
+      --shadow: rgba(0, 0, 0, 0.7);
+      --item-border: #1e293b;
+      --hover-bg: rgba(255, 255, 255, 0.05);
+    }
+
+    body.light-mode {
+      --bg-color: #f8fafc;
+      --text-color: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-inner: rgba(241, 245, 249, 0.9);
+      --card-border: rgba(0, 0, 0, 0.1);
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --secondary-text: #475569;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --item-border: #e2e8f0;
+      --hover-bg: rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      color: var(--text-color);
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s;
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      padding: 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px var(--shadow);
+      text-align: center;
+      width: 100%;
+      max-width: 450px;
+      margin-top: 50px;
+      transition: all 0.3s;
+    }
+
+    .dashboard {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+      gap: 30px;
+      margin-top: 20px;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      background: linear-gradient(to right, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    label {
+      color: var(--secondary-text);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: all 0.3s;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      width: 100%;
+      font-weight: 700;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    }
+
+    button.export-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      margin-top: 15px;
+    }
+
+    button.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+    }
+
+    .session-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.5fr 1.2fr;
+      gap: 30px;
+      width: 100%;
+    }
+
+    @media (max-width: 1000px) {
+      .session-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .qr-box,
+    .student-list,
+    .stats-box {
+      background: var(--card-inner);
+      padding: 30px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    #qrcode-container {
+      background: white;
+      padding: 15px;
+      border-radius: 15px;
+      display: inline-block;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      min-width: 250px;
+      min-height: 250px;
+    }
+
+    .timer-ring {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #f87171;
+      margin-top: 15px;
+    }
+
+    .student-list {
+      max-height: 600px;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .student-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid var(--item-border);
+      transition: background 0.3s;
+      border-radius: 8px;
+    }
+
+    .student-item:hover {
+      background: var(--hover-bg);
+    }
+
+    .badge-present {
+      color: #10b981;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-manual {
+      width: auto;
+      font-size: 0.8rem;
+      padding: 8px 15px;
+      background: #334155;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    body.light-mode .btn-manual {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .zp-code {
+      font-family: 'Courier New', monospace;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #10b981;
+      letter-spacing: 5px;
+      margin: 10px 0;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Local Library with CDN Fallback -->
+  <script src="/public/js/qrcode.min.js"
+    onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'"></script>
+  <!-- Chart.js for Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</div>
+
+  <div class="glass-card" id="loginCard">
+    <h1>Zero Proxy 👋</h1>
+    <p style="color: var(--secondary-text); margin-bottom: 30px;">Teacher Authentication Portal</p>
+    <div class="form-group">
+      <label>Access Key ID</label>
+      <input type="text" id="teacherId" placeholder="Teacher Username" autofocus>
+    </div>
+    <div class="form-group">
+      <label>Security Pin</label>
+      <input type="password" id="teacherPass" placeholder="••••••••">
+    </div>
+    <button class="primary" onclick="login()">Authenticate Engine</button>
+    <p id="authError" style="color: #f87171; margin-top: 15px; font-weight: 600;"></p>
+  </div>
+
+  <div class="dashboard" id="dashboard">
+    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1 style="margin:0; font-size: 1.8rem;">Control Room 🦾</h1>
+      <div id="sessionSubject"
+        style="background: var(--card-inner); padding: 5px 15px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; border: 1px solid var(--item-border); display: none;">
+        Waiting...</div>
+    </div>
+
+    <!-- Setup View -->
+    <div id="setupView" style="width: 100%; max-width: 500px; margin: auto;">
+      <div class="glass-card" style="margin-top:0;">
+        <div class="form-group">
+          <label>Current Classroom</label>
+          <select id="roomSelect">
+            <option value="SY-CS-A">SY-CS-A (Computer Science)</option>
+            <option value="TY-IT-B">TY-IT-B (Information Tech)</option>
+          </select>
+        </div>
+        <button class="primary" onclick="activeSession()">Initialize Broadcaster</button>
+      </div>
+    </div>
+
+    <!-- Active View -->
+    <div id="activeView" class="session-grid" style="display: none;">
+      <div class="qr-box">
+        <label>Scan to Attend</label>
+        <div id="qrcode-container"></div>
+        <p style="color: var(--secondary-text); font-size: 0.85rem; margin-top:10px;">Ask students to connect to Wi-Fi
+        </p>
+        <div class="zp-code" id="backupCode">ZP-0000</div>
+        <p style="color: var(--secondary-text); font-size: 0.8rem;">Code rotates every 10 seconds</p>
+        <div class="timer-ring">⏳ <span id="timer">10</span>s</div>
+      </div>
+
+      <div class="student-list">
+        <h3 style="margin-top:0; display: flex; justify-content: space-between; align-items: center;">
+          Syllabus Roster <span id="pendingCount" style="color: #3b82f6;">0 Left</span>
+        </h3>
+        <div id="rosterList">
+          <p style="color: var(--secondary-text); text-align: center; margin-top: 50px;">Waiting for student signals...
+          </p>
+        </div>
+      </div>
+
+      <div class="stats-box">
+        <h3 style="margin-top:0;">Live Analytics 📊</h3>
+        <div class="chart-container">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+        <button class="primary export-btn" onclick="exportToExcel()">📥 Export to CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let isLightMode = false;
+    let attendanceChart = null;
+    let totalStudents = 0;
+    let presentCount = 0;
+    let currentStudentsList = [];
+
+    // Theme Toggle
+    function toggleTheme() {
+      isLightMode = !isLightMode;
+      document.body.classList.toggle('light-mode', isLightMode);
+      document.getElementById('themeBtn').innerText = isLightMode ? '☀️' : '🌙';
+      if (attendanceChart) updateChartColors();
+    }
+
+    function login() {
+      if (document.getElementById('teacherId').value === 'admin' && document.getElementById('teacherPass').value === 'admin') {
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+      } else {
+        document.getElementById('authError').innerText = "Access Denied: Invalid Key.";
+      }
+    }
+
+    function activeSession() {
+      const room = document.getElementById('roomSelect').value;
+      socket.emit('startSession', room);
+    }
+
+    socket.on('sessionStarted', data => {
+      document.getElementById('setupView').style.display = 'none';
+      document.getElementById('activeView').style.display = 'grid';
+      document.getElementById('sessionSubject').style.display = 'block';
+      document.getElementById('sessionSubject').innerText = '📍 ' + data.subject;
+
+      currentStudentsList = data.studentsList;
+      totalStudents = data.studentsList.length;
+      presentCount = data.studentsList.filter(s => s.isPresent).length;
+
+      renderRoster(data.studentsList);
+      initChart();
+    });
+
+    socket.on('newQRCode', qrHash => {
+      const container = document.getElementById('qrcode-container');
+      container.innerHTML = "";
+
+      if (typeof QRCode === 'undefined') {
+        container.innerHTML = "<p style='color:red'>Lib Error</p>";
+      } else {
+        new QRCode(container, {
+          text: qrHash,
+          width: 250, height: 250,
+          colorDark: "#000000", colorLight: "#ffffff"
+        });
+      }
+
+      document.getElementById('backupCode').innerText = qrHash;
+
+      let sec = 10;
+      document.getElementById('timer').innerText = sec;
+      const iv = setInterval(() => {
+        sec--;
+        document.getElementById('timer').innerText = sec;
+        if (sec <= 0 || !activeViewVisible()) clearInterval(iv);
+      }, 1000);
+    });
+
+    function activeViewVisible() {
+      return document.getElementById('activeView').style.display !== 'none';
+    }
+
+    function renderRoster(list) {
+      const container = document.getElementById('rosterList');
+      container.innerHTML = "";
+
+      list.forEach(student => {
+        container.innerHTML += `
+                <div class="student-item" id="student-${student.rollNumber}" style="opacity: ${student.isPresent ? 0.4 : 1}">
+                    <div>
+                        <div style="font-weight:700">${student.name}</div>
+                        <div style="font-size:0.8rem; color: var(--secondary-text)">Roll: ${student.rollNumber}</div>
+                    </div>
+                    <div id="action-${student.rollNumber}">
+                        ${student.isPresent ? '<span class="badge-present">✔ PRESENT</span>' : `<button class="btn-manual" onclick="manualMark('${student.rollNumber}')">Override</button>`}
+                    </div>
+                </div>
+            `;
+      });
+      document.getElementById('pendingCount').innerText = (totalStudents - presentCount) + ' Left';
+    }
+
+    function manualMark(roll) { socket.emit('markManual', roll); }
+
+    socket.on('studentMarked', roll => {
+      const item = document.getElementById(`student-${roll}`);
+      if (item) {
+        item.style.opacity = '0.4';
+        item.style.background = 'rgba(16, 185, 129, 0.1)';
+        document.getElementById(`action-${roll}`).innerHTML = '<span class="badge-present">✔ PRESENT</span>';
+
+        // Update stats
+        if (!currentStudentsList.find(s => s.rollNumber === roll).isPresent) {
+          currentStudentsList.find(s => s.rollNumber === roll).isPresent = true;
+          presentCount++;
+          document.getElementById('pendingCount').innerText = (totalStudents - presentCount) + ' Left';
+          updateChart();
+        }
+      }
+    });
+
+    // Chart.js Graph Implementation
+    function initChart() {
+      const ctx = document.getElementById('attendanceChart').getContext('2d');
+      const textColor = isLightMode ? '#0f172a' : '#ffffff';
+
+      attendanceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [presentCount, totalStudents - presentCount],
+            backgroundColor: ['#10b981', '#f87171'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: textColor, font: { family: 'Outfit' } }
+            }
+          }
+        }
+      });
+    }
+
+    function updateChart() {
+      if (!attendanceChart) return;
+      attendanceChart.data.datasets[0].data = [presentCount, totalStudents - presentCount];
+      attendanceChart.update();
+    }
+
+    function updateChartColors() {
+      if (!attendanceChart) return;
+      const textColor = isLightMode ? '#0f172a' : '#ffffff';
+      attendanceChart.options.plugins.legend.labels.color = textColor;
+      attendanceChart.update();
+    }
+
+    // Export to Excel Features
+    function exportToExcel() {
+      if (currentStudentsList.length === 0) {
+        alert("No students in the roster.");
+        return;
+      }
+
+      const headers = ["Roll Number", "Name", "Status"];
+      const rows = currentStudentsList.map(s => [
+        s.rollNumber,
+        s.name,
+        s.isPresent ? "Present" : "Absent"
+      ]);
+
+      let csvContent = "data:text/csv;charset=utf-8,"
+        + headers.join(",") + "\n"
+        + rows.map(e => e.join(",")).join("\n");
+
+      var encodedUri = encodeURI(csvContent);
+      var link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Attendance_Report.csv");
+      document.body.appendChild(link); // Required for FF
+
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+
+</html>
