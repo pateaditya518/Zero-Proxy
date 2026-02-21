@@ -251,21 +251,21 @@ app.post('/api/scan', async (req, res) => {
 
     res.json({ success: true, message: `Attendance marked for ${currentSession.subject}` });
 });
+
+// DEFAULT FALLBACK ROUTE: Any undefined URL goes to student login
 app.use((req, res, next) => {
-    const host = req.headers.host || '';
-    // Normalize host header (strip port) so comparisons work when server runs
-    // on a non-80 port during testing (e.g., :3000).
-    const hostOnly = host.split(':')[0];
+    // We removed the LOCAL_IP forceful redirect here because it breaks
+    // cloud hosting platforms like Render or Vercel which assign dynamic URLs.
+    if (req.path === '/teacher') return next();
+    if (req.path.startsWith('/api')) return next();
+    if (req.path.startsWith('/public')) return next();
 
-    // If request comes from an external host (not our IP nor localhost),
-    // redirect them using HTTP 302 to our Server Root including the PORT
-    // so phones/browsers hit the correct port instead of defaulting to 80.
-    if (hostOnly !== LOCAL_IP && hostOnly !== 'localhost') {
-        return res.redirect(302, `http://${LOCAL_IP}:${PORT}/`);
+    // Redirect unknown paths back to student scanner
+    if (req.path !== '/') {
+        res.redirect('/');
+    } else {
+        next();
     }
-
-    // Default Fallback (handles 404s for our IP)
-    res.redirect('/');
 });
 
 // ==========================================
